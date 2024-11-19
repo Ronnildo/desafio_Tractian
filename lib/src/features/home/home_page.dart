@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:treeviewapp/src/features/asset/asset_page.dart';
+import 'package:treeviewapp/src/features/asset/teste.dart';
 import 'package:treeviewapp/src/features/home/widgets/container_companies.dart';
+import 'package:treeviewapp/src/models/companies_model.dart';
+import 'package:treeviewapp/src/repository/companie_repository.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -10,8 +13,11 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final CompanieRepository _activesService = CompanieRepository();
+  
   @override
   Widget build(BuildContext context) {
+   
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -25,32 +31,42 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            ContainerCompanies(
-              text: "Jaguar Unit",
-              nextPage: nextPage,
-            ),
-            ContainerCompanies(
-              text: "Tobias Unit",
-              nextPage: nextPage,
-            ),
-            ContainerCompanies(
-              text: "Apex Unit",
-              nextPage: nextPage,
-            )
-          ],
+        child: FutureBuilder(
+          future: _activesService.getCompanies(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              List list = snapshot.data; 
+              return ListView.builder(
+                itemCount: list.length,
+                itemBuilder: (context, index) {
+                  Companies companies =
+                      Companies.fromJson(snapshot.data[index]);
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    children: [
+                      ContainerCompanies(
+                        text: companies.name!,
+                        nextPage: () => nextPage(companies.id!),
+                      ),
+                    ],
+                  );
+                },
+              );
+            }
+            return const Center(child: CircularProgressIndicator());
+          },
         ),
       ),
     );
   }
 
-  nextPage() {
+  nextPage(String id) {
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => const AssetPage(),
+        builder: (context) => AssetPage(
+          companieId: id,
+        ),
       ),
     );
   }

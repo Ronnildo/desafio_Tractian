@@ -1,177 +1,199 @@
 import 'package:flutter/material.dart';
-import 'package:treeviewapp/src/features/asset/widgets/list_actives.dart';
+import 'package:treeviewapp/service/tree_service.dart';
+import 'package:treeviewapp/src/models/locations_model.dart';
 
 class AssetPage extends StatefulWidget {
-  const AssetPage({super.key});
+  final String companieId;
+  const AssetPage({
+    super.key,
+    required this.companieId,
+  });
 
   @override
   State<AssetPage> createState() => _AssetPageState();
 }
 
 class _AssetPageState extends State<AssetPage> {
-  final TextEditingController _controller = TextEditingController();
-  bool clickSensor = false;
-  bool clickCritico = false;
+  final TreeService _treeService = TreeService();
   @override
   Widget build(BuildContext context) {
+    // print(getLocation());
     return Scaffold(
-      backgroundColor: Colors.white,
       appBar: AppBar(
-        leading: InkWell(
-          onTap: () {
-            Navigator.pop(context);
-          },
-          child: const Icon(
-            Icons.arrow_back_ios_new,
-            size: 24,
-            color: Colors.white,
-          ),
-        ),
-        title: const Text(
-          "Assets",
-          style: TextStyle(
-            fontSize: 18,
-            color: Colors.white,
-            fontWeight: FontWeight.w400,
-          ),
-        ),
-        centerTitle: true,
-        backgroundColor: const Color(0xFF17192D),
+        title: Text("Assets"),
       ),
       body: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.only(left: 16, top: 16, right: 16),
-            child: TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(5),
-                ),
-                prefixIcon: const Icon(
-                  Icons.search,
-                  size: 20,
-                ),
-                prefixIconColor: const Color(0xFF8E98A3),
-                hintText: "Buscar Ativo ou Local",
-                hintStyle: const TextStyle(
-                  fontSize: 14,
-                  color: Color(0xFF8E98A3),
-                  fontWeight: FontWeight.w400,
-                ),
-              ),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: 12,
-              horizontal: 16
-            ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.start,
-              children: [
-                InkWell(
-                  onTap: setColorClickSensor,
-                  child: Container(
-                    width: 150,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color:
-                          clickSensor ? Colors.blue : const Color(0xFFFFFFFF),
-                      border: Border.all(
-                        color: const Color(0xFF8E98A3),
-                      ),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(
-                          Icons.bolt,
-                          color: clickSensor
-                              ? Colors.white
-                              : const Color(0xFF8E98A3),
-                        ),
-                        Text(
-                          "Sensor de Energia",
-                          style: TextStyle(
-                            color: clickSensor ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.w500,
+          FutureBuilder(
+            future: _treeService.listLocationAndActive(widget.companieId),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                int i = 0;
+                var data = snapshot.data!.values;
+                print(data);
+                return ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: data.length,
+                  itemBuilder: (context, index) {
+                    List tes = data.toList();
+                    if (tes[index]["childrens"] != null) {
+                      int sublo = tes[index]["childrens"].length;
+                      print(tes[index]["childrens"].toString());
+                      return ExpansionTile(
+                        leading: const Image(
+                          width: 24,
+                          height: 24,
+                          image: AssetImage(
+                            "assets/images/location.png",
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-                const SizedBox(
-                  width: 20,
-                ),
-                InkWell(
-                  onTap: setColorClickCritico,
-                  child: Container(
-                    width: 100,
-                    height: 40,
-                    decoration: BoxDecoration(
-                      color: clickCritico
-                          ? Colors.blue
-                          : const Color(0xFFFFFFFF),
-                      border: Border.all(
-                        color: const Color(0xFF8E98A3),
-                      ),
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                      children: [
-                        Icon(
-                          Icons.info,
-                          color: clickCritico
-                              ? Colors.white
-                              : const Color(0xFF8E98A3),
-                        ),
-                        Text(
-                          "Crítico",
-                          style: TextStyle(
-                            color: clickCritico ? Colors.white : Colors.black,
-                            fontWeight: FontWeight.w500,
+                        title: Text(tes[index]["name"].toString()),
+                        children: [
+                          ExpansionTile(
+                            leading: const Image(
+                              width: 24,
+                              height: 24,
+                              image: AssetImage(
+                                "assets/images/location.png",
+                              ),
+                            ),
+                            title: i != sublo
+                                ? Text(tes[index]["childrens"][i]["name"]
+                                    .toString())
+                                : const Text(""),
+                            children: [
+                              ExpansionTile(
+                                leading: const Image(
+                                  width: 24,
+                                  height: 24,
+                                  image: AssetImage(
+                                    "assets/images/component.png",
+                                  ),
+                                ),
+                                title: Text(""),
+                              ),
+                            ],
+                          ),
+                        ],
+                      );
+                    } else {
+                      return ExpansionTile(
+                        leading: const Image(
+                          width: 24,
+                          height: 24,
+                          image: AssetImage(
+                            "assets/images/component.png",
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
-            ),
+                        title: Text("locations.name!"),
+                        children: [
+                          ExpansionTile(
+                              leading: const Image(
+                                width: 24,
+                                height: 24,
+                                image: AssetImage(
+                                  "assets/images/active.png",
+                                ),
+                              ),
+                              title: Text(""))
+                        ],
+                      );
+                    }
+                  },
+                );
+              }
+              return const CircularProgressIndicator();
+            },
           ),
-          const Divider(),
-          const ListActives(text: "PRODUCTION AREA - RAW MATERIAL"),
+          // ExpansionTile(
+          //   title: Text("Location"),
+          //   leading: Image(
+          //     width: 24,
+          //     height: 24,
+          //     image: AssetImage("assets/images/location.png"),
+          //   ),
+          //   children: <Widget>[
+          //     ExpansionTile(
+          //       title: Text("Sublocation"),
+          //       leading: Image(
+          //         width: 24,
+          //         height: 24,
+          //         image: AssetImage("assets/images/location.png"),
+          //       ),
+          //       children: [
+          //         ExpansionTile(
+          //           title: Text("Active"),
+          //           leading: Image(
+          //             width: 24,
+          //             height: 24,
+          //             image: AssetImage(
+          //               "assets/images/active.png",
+          //             ),
+          //           ),
+          //           children: [
+          //             ExpansionTile(
+          //               title: Text("Subactive"),
+          //               leading: Image(
+          //                 width: 24,
+          //                 height: 24,
+          //                 image: AssetImage(
+          //                   "assets/images/active.png",
+          //                 ),
+          //               ),
+          //               children: [
+          //                 ListTile(
+          //                   title: Text("Componente"),
+          //                   leading: Image(
+          //                     width: 24,
+          //                     height: 24,
+          //                     image: AssetImage(
+          //                       "assets/images/active.png",
+          //                     ),
+          //                   ),
+          //                 ),
+          //               ],
+          //             ),
+          //           ],
+          //         ),
+          //       ],
+          //     ),
+          //   ],
+          // ),
+          // ExpansionTile(
+          //   title: Text("Location"),
+          //   leading: Image(
+          //     width: 24,
+          //     height: 24,
+          //     image: AssetImage("assets/images/location.png"),
+          //   ),
+          // ),
+          // ExpansionTile(
+          //   title: Text("Active - External"),
+          //   leading: Image(
+          //     width: 24,
+          //     height: 24,
+          //     image: AssetImage(
+          //       "assets/images/active.png",
+          //     ),
+          //   ),
+          // ),
         ],
       ),
     );
   }
 
-  setColorClickSensor() {
-    if (clickSensor) {
-      setState(() {
-        clickSensor = false;
-      });
-    } else {
-      setState(() {
-        clickSensor = true;
-      });
+  Future _getLocation() async {
+    Map response = await _treeService.listLocationAndActive(widget.companieId);
+    var data = response["locations"].toList().reversed;
+    List locations = [];
+    for (var i in data) {
+      if (i["id"] == i["parendId"]) {
+        print("True");
+      }
+      print(i["id"]);
+      locations.add(i);
     }
-  }
 
-  setColorClickCritico() {
-    if (clickCritico) {
-      setState(() {
-        clickCritico = false;
-      });
-    } else {
-      setState(() {
-        clickCritico = true;
-      });
-    }
+    return locations;
   }
 }
