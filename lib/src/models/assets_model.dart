@@ -6,6 +6,7 @@ class AssetModel {
   String? sensorType;
   String? status;
   String? gatewayId;
+  List? childrens;
 
   AssetModel({
     this.id,
@@ -15,6 +16,7 @@ class AssetModel {
     this.sensorType,
     this.status,
     this.gatewayId,
+    this.childrens,
   });
 
   AssetModel.fromJson(Map<String, dynamic> json){
@@ -25,5 +27,6 @@ class AssetModel {
     sensorType = json["sensorType"];
     status = json["status"];
     gatewayId = json["gatewayId"];
+    childrens != [] ? json["childrens"] : null;
   }
 }

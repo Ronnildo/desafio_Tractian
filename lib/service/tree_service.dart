@@ -68,7 +68,7 @@ class TreeService {
           for (var loc in mapLocations.values) {
             loc["childrens"].forEach((tes) {
               if (act["parentId"] == tes["id"]) {
-                tes["childrens"] = act;
+                tes["childrens"].add(act);
               } else {
                 tes["childrens"] = [];
               }
@@ -76,7 +76,10 @@ class TreeService {
           }
         }
       }
-
+      // for(var i in mapLocations.values){
+      //   print(i);
+      // }
+      // print(mapLocations.values);
       return mapLocations;
     } catch (err) {
       throw err.toString();
