@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:treeviewapp/src/service/tree_service.dart';
-import 'package:treeviewapp/src/models/assets_model.dart';
 import 'package:treeviewapp/src/models/childrens_model.dart';
-import 'package:treeviewapp/src/models/locations_model.dart';
 
 class AssetPage extends StatefulWidget {
   final String companieId;
@@ -17,13 +15,15 @@ class AssetPage extends StatefulWidget {
 }
 
 class _AssetPageState extends State<AssetPage> {
-  final TreeService _treeService = TreeService();
+  // final TreeService _treeService = TreeService();
   final TextEditingController _controller = TextEditingController();
-  bool clickSensor = false;
+  bool clickEnergy = false;
   bool clickCritico = false;
-  
+
   @override
   void initState() {
+    Provider.of<TreeService>(context, listen: false)
+        .listLocationAndActive(widget.companieId);
     super.initState();
   }
 
@@ -84,13 +84,13 @@ class _AssetPageState extends State<AssetPage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   InkWell(
-                    onTap: setColorClickSensor,
+                    onTap: setColorclickEnergy,
                     child: Container(
                       width: 150,
                       height: 40,
                       decoration: BoxDecoration(
                         color:
-                            clickSensor ? Colors.blue : const Color(0xFFFFFFFF),
+                            clickEnergy ? Colors.blue : const Color(0xFFFFFFFF),
                         border: Border.all(
                           color: const Color(0xFF8E98A3),
                         ),
@@ -100,14 +100,14 @@ class _AssetPageState extends State<AssetPage> {
                         children: [
                           Icon(
                             Icons.bolt,
-                            color: clickSensor
+                            color: clickEnergy
                                 ? Colors.white
                                 : const Color(0xFF8E98A3),
                           ),
                           Text(
                             "Sensor de Energia",
                             style: TextStyle(
-                              color: clickSensor ? Colors.white : Colors.black,
+                              color: clickEnergy ? Colors.white : Colors.black,
                               fontWeight: FontWeight.w500,
                             ),
                           ),
@@ -124,8 +124,9 @@ class _AssetPageState extends State<AssetPage> {
                       width: 100,
                       height: 40,
                       decoration: BoxDecoration(
-                        color:
-                            clickCritico ? Colors.blue : const Color(0xFFFFFFFF),
+                        color: clickCritico
+                            ? Colors.blue
+                            : const Color(0xFFFFFFFF),
                         border: Border.all(
                           color: const Color(0xFF8E98A3),
                         ),
@@ -155,191 +156,609 @@ class _AssetPageState extends State<AssetPage> {
               ),
             ),
             Scrollbar(
-              child: FutureBuilder(
-                future: Provider.of<TreeService>(context).listLocationAndActive(widget.companieId, clickSensor),
-                builder: (context, snapshot) {
-                  Map<String,dynamic> data = Provider.of<TreeService>(context).data;              
-                  if (snapshot.hasData) {
-                    return ListView.builder(
-                      shrinkWrap: true,
-                      itemCount: snapshot.data!.length,
-                      itemBuilder: (context, index) {
-                        var assets = data.values.toList();
-                        // print(assets);
-                        TesteModel testeModel =
-                            TesteModel.fromJson(assets[index]);
-                        ChildrenFil external =
-                            ChildrenFil.fromJson(assets[index]);
-                        if (testeModel.childrens != null) {
-                          Childrens? subloc = sublocations(testeModel.childrens!);
-        
-                          if (subloc != null) {
-                            return ExpansionTile(
-                                leading: const Image(
-                                  width: 24,
-                                  height: 24,
-                                  image: AssetImage(
-                                    "assets/images/location.png",
-                                  ),
-                                ),
-                                title: Text(
-                                  testeModel.name!,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
-                                  ),
-                                ),
-                                children: testeModel.childrens!.map((e) {
-                                  return Padding(
-                                    padding: const EdgeInsets.only(left: 20.0),
-                                    child: ExpansionTile(
-                                      leading: Image(
-                                        width: 24,
-                                        height: 24,
-                                        image: (e.locationId != null &&
-                                                e.parentId == null &&
-                                                e.sensorId == null)
-                                            ? const AssetImage(
-                                                "assets/images/active.png",
-                                              )
-                                            : const AssetImage(
-                                                "assets/images/location.png",
-                                              ),
-                                      ),
-                                      trailing: null,
-                                      title: Row(
-                                        children: [
-                                          Text(
-                                            e.name!,
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.w400,
-                                            ),
-                                          ),
-                                          (e.sensorId != null &&
-                                                  e.parentId == null &&
-                                                  e.locationId != null)
-                                              ? Icon(
-                                                  e.status != "alert"
-                                                      ? Icons.bolt
-                                                      : Icons.circle,
-                                                  color: e.status == "alert"
-                                                      ? const Color(0xFFED3833)
-                                                      : Colors.green,
-                                                  size: 20,
-                                                )
-                                              : const Icon(null),
-                                        ],
-                                      ),
-                                      children: e.childrens != null
-                                          ? e.childrens!.map((c) {
-                                              return Padding(
-                                                padding: const EdgeInsets.only(
-                                                    left: 40),
-                                                child: Row(
-                                                  children: [
-                                                    const Image(
-                                                      width: 24,
-                                                      height: 24,
-                                                      image: AssetImage(
-                                                        "assets/images/component.png",
-                                                      ),
-                                                    ),
-                                                    const SizedBox(
-                                                      width: 10,
-                                                    ),
-                                                    Row(
-                                                      children: [
-                                                        Text(
-                                                          c.name!,
-                                                          style: const TextStyle(
-                                                            fontSize: 14,
-                                                            fontWeight:
-                                                                FontWeight.w400,
-                                                          ),
-                                                        ),
-                                                        const SizedBox(
-                                                          width: 10,
-                                                        ),
-                                                        c.sensorId != null
-                                                            ? Icon(
-                                                                c.status ==
-                                                                        "alert"
-                                                                    ? Icons.circle
-                                                                    : Icons.bolt,
-                                                                color: c.status ==
-                                                                        "alert"
-                                                                    ? const Color(
-                                                                        0xFFED3833)
-                                                                    : Colors
-                                                                        .green,
-                                                                size: 20,
-                                                              )
-                                                            : const Icon(null),
-                                                      ],
-                                                    ),
-                                                  ],
-                                                ),
-                                              );
-        
-                                              // return Container();
-                                            }).toList()
-                                          : [],
+              child: Consumer<TreeService>(
+                builder: (context, value, child) {
+                  print(clickEnergy);
+                  var data = value.data.values.toList();
+                  // var filter = value.energy.values.toList();
+                  // print(data);
+                  return clickEnergy
+                      ? ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: data.length,
+                          itemBuilder: (context, index) {
+                            TesteModel testeModel =
+                                TesteModel.fromJson(data[index]);
+
+                            Childrens? subloc =
+                                sublocations(testeModel.childrens!);
+                            if (subloc != null) {
+                              return ExpansionTile(
+                                  leading: const Image(
+                                    width: 24,
+                                    height: 24,
+                                    image: AssetImage(
+                                      "assets/images/location.png",
                                     ),
-                                  );
-                                }).toList());
-                          }
-                        }
-                        if (external.status != null) {
-                          return Container(
-                            padding: const EdgeInsets.only(left: 20),
-                            child: Row(
-                              children: [
-                                const Image(
-                                  width: 24,
-                                  height: 24,
-                                  image: AssetImage(
-                                    "assets/images/component.png",
                                   ),
-                                ),
-                                const SizedBox(
-                                  width: 10,
-                                ),
-                                Text(
-                                  external.name!,
-                                  style: const TextStyle(
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w500,
+                                  title: Text(
+                                    testeModel.name!,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
                                   ),
+                                  children: testeModel.childrens!.map((e) {
+                                    return Padding(
+                                      padding:
+                                          const EdgeInsets.only(left: 20.0),
+                                      child: (e.locationId != null &&
+                                              e.parentId == null &&
+                                              e.sensorId != null)
+                                          ? Row(
+                                              children: [
+                                                Text(
+                                                  e.name!,
+                                                  style: const TextStyle(
+                                                    fontSize: 15,
+                                                    fontWeight: FontWeight.w400,
+                                                  ),
+                                                ),
+                                                (e.sensorId != null &&
+                                                        e.parentId == null &&
+                                                        e.locationId != null)
+                                                    ? Icon(
+                                                        e.status != "alert"
+                                                            ? Icons.bolt
+                                                            : Icons.circle,
+                                                        color:
+                                                            e.status == "alert"
+                                                                ? const Color(
+                                                                    0xFFED3833)
+                                                                : Colors.green,
+                                                        size: 20,
+                                                      )
+                                                    : const Icon(null),
+                                              ],
+                                            )
+                                          : ExpansionTile(
+                                              leading: Image(
+                                                width: 24,
+                                                height: 24,
+                                                image: const AssetImage(
+                                                  "assets/images/location.png",
+                                                ),
+                                              ),
+                                              trailing: null,
+                                              title: Row(
+                                                children: [
+                                                  Text(
+                                                    e.name!,
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                  (e.sensorId != null &&
+                                                          e.parentId == null &&
+                                                          e.locationId != null)
+                                                      ? Icon(
+                                                          e.status != "alert"
+                                                              ? Icons.bolt
+                                                              : Icons.circle,
+                                                          color: e.status ==
+                                                                  "alert"
+                                                              ? const Color(
+                                                                  0xFFED3833)
+                                                              : Colors.green,
+                                                          size: 20,
+                                                        )
+                                                      : const Icon(null),
+                                                ],
+                                              ),
+                                              children: e.childrens != null
+                                                  ? e.childrens!.map((c) {
+                                                      return Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 40),
+                                                        child: Row(
+                                                          children: [
+                                                            const Image(
+                                                              width: 24,
+                                                              height: 24,
+                                                              image: AssetImage(
+                                                                "assets/images/component.png",
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 10,
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                  c.name!,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400,
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 10,
+                                                                ),
+                                                                c.sensorId !=
+                                                                        null
+                                                                    ? Icon(
+                                                                        c.status ==
+                                                                                "alert"
+                                                                            ? Icons.circle
+                                                                            : Icons.bolt,
+                                                                        color: c.status ==
+                                                                                "alert"
+                                                                            ? const Color(0xFFED3833)
+                                                                            : Colors.green,
+                                                                        size:
+                                                                            20,
+                                                                      )
+                                                                    : const Icon(
+                                                                        null),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+
+                                                      // return Container();
+                                                    }).toList()
+                                                  : [],
+                                            ),
+                                    );
+                                  }).toList());
+                            }
+                            // print(data);
+
+                            return Container(
+                              padding: const EdgeInsets.only(left: 20),
+                              child: Row(
+                                children: [
+                                  Image(
+                                      width: 24,
+                                      height: 24,
+                                      image: testeModel.childrens == null
+                                          ? const AssetImage(
+                                              "assets/images/location.png",
+                                            )
+                                          : const AssetImage(
+                                              "assets/images/component.png",
+                                            )),
+                                  const SizedBox(
+                                    width: 10,
+                                  ),
+                                  Text(
+                                    testeModel.name!,
+                                    style: const TextStyle(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const Icon(
+                                    Icons.bolt,
+                                    color: Colors.green,
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
+                        )
+                      : ListView.builder(
+                          shrinkWrap: true,
+                          itemCount: data.length,
+                          itemBuilder: (context, index) {
+                            TesteModel testeModel =
+                                TesteModel.fromJson(data[index]);
+                            ChildrenFil external =
+                                ChildrenFil.fromJson(data[index]);
+                            if (testeModel.childrens != null) {
+                              Childrens? subloc =
+                                  sublocations(testeModel.childrens!);
+                              if (subloc != null) {
+                                return ExpansionTile(
+                                    leading: const Image(
+                                      width: 24,
+                                      height: 24,
+                                      image: AssetImage(
+                                        "assets/images/location.png",
+                                      ),
+                                    ),
+                                    title: Text(
+                                      testeModel.name!,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    children: testeModel.childrens!.map((e) {
+                                      return (e.locationId != null &&
+                                              e.parentId == null &&
+                                              e.sensorId != null)
+                                          ? Padding(
+                                              padding: const EdgeInsets.only(
+                                                  left: 50.0, bottom: 10),
+                                              child: Row(
+                                                children: [
+                                                  const Image(
+                                                    width: 24,
+                                                    height: 24,
+                                                    image: AssetImage(
+                                                      "assets/images/component.png",
+                                                    ),
+                                                  ),
+                                                  Text(
+                                                    e.name!,
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                  (e.sensorId != null &&
+                                                          e.parentId == null &&
+                                                          e.locationId != null)
+                                                      ? Icon(
+                                                          e.status != "alert"
+                                                              ? Icons.bolt
+                                                              : Icons.circle,
+                                                          color: e.status ==
+                                                                  "alert"
+                                                              ? const Color(
+                                                                  0xFFED3833)
+                                                              : Colors.green,
+                                                          size: 20,
+                                                        )
+                                                      : const Icon(null),
+                                                ],
+                                              ),
+                                            )
+                                          : ExpansionTile(
+                                              leading: const Image(
+                                                width: 24,
+                                                height: 24,
+                                                image: AssetImage(
+                                                  "assets/images/location.png",
+                                                ),
+                                              ),
+                                              trailing: null,
+                                              title: Row(
+                                                children: [
+                                                  Text(
+                                                    e.name!,
+                                                    style: const TextStyle(
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.w400,
+                                                    ),
+                                                  ),
+                                                  (e.sensorId != null &&
+                                                          e.parentId == null &&
+                                                          e.locationId != null)
+                                                      ? Icon(
+                                                          e.status != "alert"
+                                                              ? Icons.bolt
+                                                              : Icons.circle,
+                                                          color: e.status ==
+                                                                  "alert"
+                                                              ? const Color(
+                                                                  0xFFED3833)
+                                                              : Colors.green,
+                                                          size: 20,
+                                                        )
+                                                      : const Icon(null),
+                                                ],
+                                              ),
+                                              children: e.childrens != null
+                                                  ? e.childrens!.map((c) {
+                                                      return Padding(
+                                                        padding:
+                                                            const EdgeInsets
+                                                                .only(left: 40),
+                                                        child: Row(
+                                                          children: [
+                                                            const Image(
+                                                              width: 24,
+                                                              height: 24,
+                                                              image: AssetImage(
+                                                                "assets/images/component.png",
+                                                              ),
+                                                            ),
+                                                            const SizedBox(
+                                                              width: 10,
+                                                            ),
+                                                            Row(
+                                                              children: [
+                                                                Text(
+                                                                  c.name!,
+                                                                  style:
+                                                                      const TextStyle(
+                                                                    fontSize:
+                                                                        14,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .w400,
+                                                                  ),
+                                                                ),
+                                                                const SizedBox(
+                                                                  width: 10,
+                                                                ),
+                                                                c.sensorId !=
+                                                                        null
+                                                                    ? Icon(
+                                                                        c.status ==
+                                                                                "alert"
+                                                                            ? Icons.circle
+                                                                            : Icons.bolt,
+                                                                        color: c.status ==
+                                                                                "alert"
+                                                                            ? const Color(0xFFED3833)
+                                                                            : Colors.green,
+                                                                        size:
+                                                                            20,
+                                                                      )
+                                                                    : const Icon(
+                                                                        null),
+                                                              ],
+                                                            ),
+                                                          ],
+                                                        ),
+                                                      );
+
+                                                      // return Container();
+                                                    }).toList()
+                                                  : [],
+                                            );
+                                    }).toList());
+                              }
+                            }
+                            if (external.status != null) {
+                              return Container(
+                                padding: const EdgeInsets.only(left: 20),
+                                child: Row(
+                                  children: [
+                                    const Image(
+                                      width: 24,
+                                      height: 24,
+                                      image: AssetImage(
+                                        "assets/images/component.png",
+                                      ),
+                                    ),
+                                    const SizedBox(
+                                      width: 10,
+                                    ),
+                                    Text(
+                                      external.name!,
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const Icon(
+                                      Icons.bolt,
+                                      color: Colors.green,
+                                    ),
+                                  ],
                                 ),
-                                const Icon(
-                                  Icons.bolt,
-                                  color: Colors.green,
+                              );
+                            }
+                            // print(childrenFil!.id);
+                            return ExpansionTile(
+                              leading: const Image(
+                                width: 24,
+                                height: 24,
+                                image: AssetImage(
+                                  "assets/images/location.png",
                                 ),
-                              ],
-                            ),
-                          );
-                        }
-                        // print(childrenFil!.id);
-                        return ExpansionTile(
-                          leading: const Image(
-                            width: 24,
-                            height: 24,
-                            image: AssetImage(
-                              "assets/images/location.png",
-                            ),
-                          ),
-                          title: Text(external.name!),
-        
-                          // enabled: false,
-                          dense: true,
+                              ),
+                              title: Text(external.name!),
+
+                              // enabled: false,
+                              dense: true,
+                            );
+                          },
                         );
-                      },
-                    );
-                  }
-                  return const Center(child: CircularProgressIndicator());
                 },
               ),
+              // FutureBuilder(
+              //   future: _treeService.listLocationAndActive(widget.companieId),
+              //   builder: (context, snapshot) {
+              //     if (snapshot.hasData) {
+              //       return ListView.builder(
+              //         shrinkWrap: true,
+              //         itemCount: snapshot.data!.length,
+              //         itemBuilder: (context, index) {
+              //           var assets = snapshot.data.values.toList();
+              //           // print(assets);
+              //           TesteModel testeModel =
+              //               TesteModel.fromJson(assets[index]);
+              //           ChildrenFil external =
+              //               ChildrenFil.fromJson(assets[index]);
+              // if (testeModel.childrens != null) {
+              //   Childrens? subloc =
+              //       sublocations(testeModel.childrens!);
+
+              // if (subloc != null) {
+              //   return ExpansionTile(
+              //       leading: const Image(
+              //         width: 24,
+              //         height: 24,
+              //         image: AssetImage(
+              //           "assets/images/location.png",
+              //         ),
+              //       ),
+              //       title: Text(
+              //         testeModel.name!,
+              //         style: const TextStyle(
+              //           fontSize: 16,
+              //           fontWeight: FontWeight.w500,
+              //         ),
+              //       ),
+              // children: testeModel.childrens!.map((e) {
+              //   return Padding(
+              //     padding: const EdgeInsets.only(left: 20.0),
+              //     child: ExpansionTile(
+              //       leading: Image(
+              //         width: 24,
+              //         height: 24,
+              //         image: (e.locationId != null &&
+              //                 e.parentId == null &&
+              //                 e.sensorId == null)
+              //             ? const AssetImage(
+              //                 "assets/images/active.png",
+              //               )
+              //             : const AssetImage(
+              //                 "assets/images/location.png",
+              //               ),
+              //       ),
+              //       trailing: null,
+              //       title: Row(
+              //         children: [
+              //           Text(
+              //             e.name!,
+              //             style: const TextStyle(
+              //               fontSize: 15,
+              //               fontWeight: FontWeight.w400,
+              //             ),
+              //           ),
+              //           (e.sensorId != null &&
+              //                   e.parentId == null &&
+              //                   e.locationId != null)
+              //               ? Icon(
+              //                   e.status != "alert"
+              //                       ? Icons.bolt
+              //                       : Icons.circle,
+              //                   color: e.status == "alert"
+              //                       ? const Color(0xFFED3833)
+              //                       : Colors.green,
+              //                   size: 20,
+              //                 )
+              //               : const Icon(null),
+              //         ],
+              //       ),
+              //       children: e.childrens != null
+              //           ? e.childrens!.map((c) {
+              //               return Padding(
+              //                 padding: const EdgeInsets.only(
+              //                     left: 40),
+              //                 child: Row(
+              //                   children: [
+              //                     const Image(
+              //                       width: 24,
+              //                       height: 24,
+              //                       image: AssetImage(
+              //                         "assets/images/component.png",
+              //                       ),
+              //                     ),
+              //                     const SizedBox(
+              //                       width: 10,
+              //                     ),
+              //                     Row(
+              //                       children: [
+              //                         Text(
+              //                           c.name!,
+              //                           style:
+              //                               const TextStyle(
+              //                             fontSize: 14,
+              //                             fontWeight:
+              //                                 FontWeight.w400,
+              //                           ),
+              //                         ),
+              //                         const SizedBox(
+              //                           width: 10,
+              //                         ),
+              //                         c.sensorId != null
+              //                             ? Icon(
+              //                                 c.status ==
+              //                                         "alert"
+              //                                     ? Icons
+              //                                         .circle
+              //                                     : Icons
+              //                                         .bolt,
+              //                                 color: c.status ==
+              //                                         "alert"
+              //                                     ? const Color(
+              //                                         0xFFED3833)
+              //                                     : Colors
+              //                                         .green,
+              //                                 size: 20,
+              //                               )
+              //                             : const Icon(null),
+              //                       ],
+              //                     ),
+              //                   ],
+              //                 ),
+              //               );
+
+              //               // return Container();
+              //             }).toList()
+              //           : [],
+              //     ),
+              //   );
+              // }).toList());
+              //             }
+              //           }
+              //           if (external.status != null) {
+              // return Container(
+              //   padding: const EdgeInsets.only(left: 20),
+              //   child: Row(
+              //     children: [
+              //       const Image(
+              //         width: 24,
+              //         height: 24,
+              //         image: AssetImage(
+              //           "assets/images/component.png",
+              //         ),
+              //       ),
+              //       const SizedBox(
+              //         width: 10,
+              //       ),
+              //       Text(
+              //         external.name!,
+              //         style: const TextStyle(
+              //           fontSize: 16,
+              //           fontWeight: FontWeight.w500,
+              //         ),
+              //       ),
+              //       const Icon(
+              //         Icons.bolt,
+              //         color: Colors.green,
+              //       ),
+              //     ],
+              //   ),
+              // );
+              //           }
+              //           // print(childrenFil!.id);
+              //           return ExpansionTile(
+              //             leading: const Image(
+              //               width: 24,
+              //               height: 24,
+              //               image: AssetImage(
+              //                 "assets/images/location.png",
+              //               ),
+              //             ),
+              //             title: Text(external.name!),
+
+              //             // enabled: false,
+              //             dense: true,
+              //           );
+              //         },
+              //       );
+              //     }
+              //     return const Center(child: CircularProgressIndicator());
+              //   },
+              // ),
             ),
           ],
         ),
@@ -347,14 +766,19 @@ class _AssetPageState extends State<AssetPage> {
     );
   }
 
-  setColorClickSensor() {
-    if (clickSensor) {
+  setColorclickEnergy() {
+    if (clickEnergy) {
       setState(() {
-        clickSensor = false;
+        clickEnergy = false;
+        Provider.of<TreeService>(context, listen: false).listLocationAndActive(widget.companieId);
       });
     } else {
       setState(() {
-        clickSensor = true;
+        clickEnergy = true;
+
+        clickCritico = false;
+
+        Provider.of<TreeService>(context, listen: false).filterSensorEnergy();
       });
     }
   }
@@ -363,10 +787,13 @@ class _AssetPageState extends State<AssetPage> {
     if (clickCritico) {
       setState(() {
         clickCritico = false;
+        Provider.of<TreeService>(context, listen: false).listLocationAndActive(widget.companieId);
       });
     } else {
       setState(() {
+        clickEnergy = false;
         clickCritico = true;
+        Provider.of<TreeService>(context, listen: false).filterSensorAlert();
       });
     }
   }
@@ -391,6 +818,4 @@ class _AssetPageState extends State<AssetPage> {
     }
     // return childrenFil.name;
   }
-
- 
 }
