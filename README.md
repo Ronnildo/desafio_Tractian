@@ -1,16 +1,24 @@
-# treeviewapp
+# Treeviewapp
 
-A new Flutter project.
+Desafio Tractian
 
-## Getting Started
+## Objetivo
 
-This project is a starting point for a Flutter application.
+Criar um app treeview para visualizar a hierarquia de ativos é por meio de uma estrutura de árvore.
+ - Componentes
+ - ativos/subativos
+ - Locais/sublocais
 
-A few resources to get you started if this is your first Flutter project:
+E implementar filtros para sensores de energia e sensores com status crítico, além de pesquisa por texto para componentes, ativos e locais.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Vídeo Demonstrativo
+- [Link do Vídeo no Drive](https://drive.google.com/file/d/1YTRIqx0d2KU3zPYo84pn5GR5H7dAeoNW/view?usp=drive_link)
+- [Vídeo junto aos arquivos](treeview.mp4)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+
+## Melhorias
+- Melhorias na interface, para uma melhor visualização do usuário.
+- Otimizações no carregamento dos ativos, melhor estruturação para exibição na tela.
+- Buscas refinadas e otimização no código de filtro.
+- Arquitetura.
+

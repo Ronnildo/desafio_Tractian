@@ -7,10 +7,8 @@ class TreeService extends ChangeNotifier {
   final AssetRepository _assetRepository = AssetRepository();
 
   Map<String, dynamic> _data = {};
-  Map<String, dynamic> _energy = {};
 
   get data => _data;
-  get energy => _energy;
 
   Future listLocationAndActive(
     String companieId,
@@ -91,41 +89,33 @@ class TreeService extends ChangeNotifier {
     }
   }
 
-  Future filterInput(String input) async {
-    List filters = _data.values.toList();
-    Map<String, dynamic> data = {};
-    for (int i = 0; i < filters.length; i++) {
-      if (filters[i]["name"].contains(input)) {
-        data["energy"] = filters[i];
-      }
-    }
-    _energy = data;
-    notifyListeners();
-  }
-
   Future filterInputActive(String companieId, String input) async {
-    List _filters = _data.values.toList();
+    List filters = _data.values.toList();
+
+    for(var inp in filters){
+      
+    }
     for (int i = 0; i < data.length; i++) {
       
-      if (_filters[i]["childrens"].isNotEmpty) {
-        for (int j = 0; j < _filters[i]["childrens"].length; j++) {
-          if (_filters[i]["childrens"][j]["name"].contains(input)) {
-            return _filters[i];
+      if (filters[i]["childrens"].isNotEmpty) {
+        for (int j = 0; j < filters[i]["childrens"].length; j++) {
+          if (filters[i]["childrens"][j]["name"].contains(input)) {
+            return filters[i];
           } else {
-            if (_filters[i]["childrens"][j]["childrens"].isNotEmpty) {
+            if (filters[i]["childrens"][j]["childrens"].isNotEmpty) {
               for (int k = 0;
-                  k < _filters[i]["childrens"][j]["childrens"].length;
+                  k < filters[i]["childrens"][j]["childrens"].length;
                   k++) {
-                if (_filters[i]["childrens"][j]["childrens"][k]["name"]
+                if (filters[i]["childrens"][j]["childrens"][k]["name"]
                     .contains(input)) {
-                  return _filters[i];
+                  return filters[i];
                 }
               }
-              // print(_filters[i]["childrens"][j]["childrens"]);
+              // print(filters[i]["childrens"][j]["childrens"]);
             }
           }
         }
-        return _filters[i];
+        return filters[i];
       }
     }
   }
