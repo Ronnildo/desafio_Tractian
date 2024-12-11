@@ -83,7 +83,6 @@ class TreeService extends ChangeNotifier {
           }
         }
       }
-
       _data = mapHierarchy;
       notifyListeners();
       // return _data;
@@ -92,7 +91,7 @@ class TreeService extends ChangeNotifier {
     }
   }
 
-  Future filterInputLocation(String input) async {
+  Future filterInput(String input) async {
     List filters = _data.values.toList();
     Map<String, dynamic> data = {};
     for (int i = 0; i < filters.length; i++) {
@@ -107,6 +106,7 @@ class TreeService extends ChangeNotifier {
   Future filterInputActive(String companieId, String input) async {
     List _filters = _data.values.toList();
     for (int i = 0; i < data.length; i++) {
+      
       if (_filters[i]["childrens"].isNotEmpty) {
         for (int j = 0; j < _filters[i]["childrens"].length; j++) {
           if (_filters[i]["childrens"][j]["name"].contains(input)) {
@@ -134,22 +134,39 @@ class TreeService extends ChangeNotifier {
   Future filterSensorEnergy() async {
     List data = _data.values.toList();
     Map<String, dynamic> energyFilter = {};
+
+    for (var i in data) {
+      energyFilter[i["name"]] = {
+        "name": i["name"],
+        "childrens": [],
+      };
+    }
+
     for (int i = 0; i < data.length; i++) {
       if (data[i]["sensorType"] == "energy") {
-        energyFilter["filter"] = data[i];
-      } else {
-        if (data[i]["childrens"] != null) {
-          for (int j = 0; j < data[i]["childrens"].length; j++) {
-            if (data[i]["childrens"][j]["sensorType"] == "energy") {
-              print(data[i]["childrens"]);
-              energyFilter["filter"] = data[i];
+        energyFilter[data[i]["name"]]["childrens"].add(data[i]);
+      }
+      for (int j = 0; j < data[i]["childrens"].length; j++) {
+        if (data[i]["childrens"][j]["sensorType"] == "energy") {
+          energyFilter[data[i]["name"]]["childrens"]
+              .add(data[i]["childrens"][j]);
+        }
+
+        if (data[i]["childrens"][j]["childrens"] != null) {
+          for (int k = 0;
+              k < data[i]["childrens"][j]["childrens"].length;
+              k++) {
+            if (data[i]["childrens"][j]["childrens"][k]["sensorType"] ==
+                "energy") {
+              energyFilter[data[i]["name"]]["childrens"]
+                  .add(data[i]["childrens"][j]["childrens"][k]);
             }
           }
         }
       }
     }
+    
     _data = energyFilter;
-    // print(_data);
     notifyListeners();
   }
 
@@ -157,26 +174,37 @@ class TreeService extends ChangeNotifier {
   Future filterSensorAlert() async {
     List data = _data.values.toList();
     Map<String, dynamic> criticSensor = {};
+
+    for (var i in data) {
+      criticSensor[i["name"]] = {
+        "name": i["name"],
+        "childrens": [],
+      };
+    }
+
     for (int i = 0; i < data.length; i++) {
       // print(data[i]["sensorType"]);
       if (data[i]["status"] == "alert") {
-        criticSensor["filter"] = data[i];
+        criticSensor[data[i]["name"]]["childrens"].add(data[i]);
       }
       for (int j = 0; j < data[i]["childrens"].length; j++) {
         if (data[i]["childrens"][j]["status"] == "alert") {
-          criticSensor["filter"] = data[i];
+          criticSensor[data[i]["name"]]["childrens"]
+              .add(data[i]["childrens"]);
         }
-        if (data[i]["childrens"] != null) {
+        if (data[i]["childrens"][j]["childrens"] != null) {
           for (int k = 0;
               k < data[i]["childrens"][j]["childrens"].length;
               k++) {
             if (data[i]["childrens"][j]["childrens"][k]["status"] == "alert") {
-              criticSensor["filter"] = data[i];
+              criticSensor[data[i]["name"]]["childrens"]
+                  .add(data[i]["childrens"][j]["childrens"][k]);
             }
           }
         }
       }
     }
+
     _data = criticSensor;
     // print(_data);
     notifyListeners();

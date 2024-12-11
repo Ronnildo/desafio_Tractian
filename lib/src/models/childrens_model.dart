@@ -1,10 +1,10 @@
-class TesteModel {
+class TreeModel {
   String? name;
   List<Childrens>? childrens;
 
-  TesteModel({this.name, this.childrens});
+  TreeModel({this.name, this.childrens});
 
-  TesteModel.fromJson(Map<String, dynamic> json) {
+  TreeModel.fromJson(Map<String, dynamic> json) {
     name = json['name'];
     if (json['childrens'] != null) {
       childrens = <Childrens>[];

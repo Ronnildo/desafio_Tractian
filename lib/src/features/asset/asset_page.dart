@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:treeviewapp/src/features/asset/widgets/active.dart';
 import 'package:treeviewapp/src/service/tree_service.dart';
 import 'package:treeviewapp/src/models/childrens_model.dart';
 
@@ -60,6 +61,9 @@ class _AssetPageState extends State<AssetPage> {
               padding: const EdgeInsets.only(left: 16, top: 16, right: 16),
               child: TextField(
                 controller: _controller,
+                onSubmitted: (e){
+                  Provider.of<TreeService>(context, listen: false).filterInputActive(widget.companieId, e);
+                },
                 decoration: InputDecoration(
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(5),
@@ -84,7 +88,7 @@ class _AssetPageState extends State<AssetPage> {
                 mainAxisAlignment: MainAxisAlignment.start,
                 children: [
                   InkWell(
-                    onTap: setColorclickEnergy,
+                    onTap: clickSensorEnergy,
                     child: Container(
                       width: 150,
                       height: 40,
@@ -119,7 +123,7 @@ class _AssetPageState extends State<AssetPage> {
                     width: 20,
                   ),
                   InkWell(
-                    onTap: setColorClickCritico,
+                    onTap: clickSensorAlert,
                     child: Container(
                       width: 100,
                       height: 40,
@@ -158,607 +162,68 @@ class _AssetPageState extends State<AssetPage> {
             Scrollbar(
               child: Consumer<TreeService>(
                 builder: (context, value, child) {
-                  print(clickEnergy);
                   var data = value.data.values.toList();
-                  // var filter = value.energy.values.toList();
-                  // print(data);
-                  return clickEnergy
-                      ? ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: data.length,
-                          itemBuilder: (context, index) {
-                            TesteModel testeModel =
-                                TesteModel.fromJson(data[index]);
-
-                            Childrens? subloc =
-                                sublocations(testeModel.childrens!);
-                            if (subloc != null) {
-                              return ExpansionTile(
-                                  leading: const Image(
-                                    width: 24,
-                                    height: 24,
+                  return ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: data.length,
+                      itemBuilder: (context, index) {
+                        // print(data);
+                        TreeModel tree = TreeModel.fromJson(data[index]);
+                        if (data[index]["sensorId"] != null) {
+                          return ActiveComponent(
+                              name: data[index]["name"],
+                              status: data[index]["status"]);
+                        }
+                        Childrens? children = sublocations(tree.childrens!);
+                        if (children != null) {
+                          return ExpansionTile(
+                            leading: children.locationId != null ||
+                                    children.parentId != null
+                                ? const Image(
                                     image: AssetImage(
-                                      "assets/images/location.png",
-                                    ),
+                                        "assets/images/location.png"),
+                                    height: 30,
+                                  )
+                                : const Image(
+                                    image: AssetImage(
+                                        "assets/images/component.png"),
+                                    height: 30,
                                   ),
-                                  title: Text(
-                                    testeModel.name!,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  children: testeModel.childrens!.map((e) {
-                                    return Padding(
-                                      padding:
-                                          const EdgeInsets.only(left: 20.0),
-                                      child: (e.locationId != null &&
-                                              e.parentId == null &&
-                                              e.sensorId != null)
-                                          ? Row(
-                                              children: [
-                                                Text(
-                                                  e.name!,
-                                                  style: const TextStyle(
-                                                    fontSize: 15,
-                                                    fontWeight: FontWeight.w400,
-                                                  ),
-                                                ),
-                                                (e.sensorId != null &&
-                                                        e.parentId == null &&
-                                                        e.locationId != null)
-                                                    ? Icon(
-                                                        e.status != "alert"
-                                                            ? Icons.bolt
-                                                            : Icons.circle,
-                                                        color:
-                                                            e.status == "alert"
-                                                                ? const Color(
-                                                                    0xFFED3833)
-                                                                : Colors.green,
-                                                        size: 20,
-                                                      )
-                                                    : const Icon(null),
-                                              ],
+                            title: Text(tree.name!),
+                            children: tree.childrens!.map((act) {
+                              return act.sensorType == null
+                                  ? ExpansionTile(
+                                      leading: act.parentId != null
+                                          ? const Image(
+                                              image: AssetImage(
+                                                  "assets/images/location.png"),
+                                              height: 30,
                                             )
-                                          : ExpansionTile(
-                                              leading: Image(
-                                                width: 24,
-                                                height: 24,
-                                                image: const AssetImage(
-                                                  "assets/images/location.png",
-                                                ),
-                                              ),
-                                              trailing: null,
-                                              title: Row(
-                                                children: [
-                                                  Text(
-                                                    e.name!,
-                                                    style: const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                    ),
-                                                  ),
-                                                  (e.sensorId != null &&
-                                                          e.parentId == null &&
-                                                          e.locationId != null)
-                                                      ? Icon(
-                                                          e.status != "alert"
-                                                              ? Icons.bolt
-                                                              : Icons.circle,
-                                                          color: e.status ==
-                                                                  "alert"
-                                                              ? const Color(
-                                                                  0xFFED3833)
-                                                              : Colors.green,
-                                                          size: 20,
-                                                        )
-                                                      : const Icon(null),
-                                                ],
-                                              ),
-                                              children: e.childrens != null
-                                                  ? e.childrens!.map((c) {
-                                                      return Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 40),
-                                                        child: Row(
-                                                          children: [
-                                                            const Image(
-                                                              width: 24,
-                                                              height: 24,
-                                                              image: AssetImage(
-                                                                "assets/images/component.png",
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 10,
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text(
-                                                                  c.name!,
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                  width: 10,
-                                                                ),
-                                                                c.sensorId !=
-                                                                        null
-                                                                    ? Icon(
-                                                                        c.status ==
-                                                                                "alert"
-                                                                            ? Icons.circle
-                                                                            : Icons.bolt,
-                                                                        color: c.status ==
-                                                                                "alert"
-                                                                            ? const Color(0xFFED3833)
-                                                                            : Colors.green,
-                                                                        size:
-                                                                            20,
-                                                                      )
-                                                                    : const Icon(
-                                                                        null),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      );
-
-                                                      // return Container();
-                                                    }).toList()
-                                                  : [],
+                                          : const Image(
+                                              image: AssetImage(
+                                                  "assets/images/active.png"),
+                                              height: 30,
                                             ),
+                                      title: Text(act.name!),
+                                      children: act.childrens != null
+                                          ? act.childrens!.map((comp) {
+                                              return ActiveComponent(
+                                                  name: comp.name!,
+                                                  status: comp.status!);
+                                            }).toList()
+                                          : [],
+                                    )
+                                  : ActiveComponent(
+                                      name: act.name!,
+                                      status: act.status!,
                                     );
-                                  }).toList());
-                            }
-                            // print(data);
-
-                            return Container(
-                              padding: const EdgeInsets.only(left: 20),
-                              child: Row(
-                                children: [
-                                  Image(
-                                      width: 24,
-                                      height: 24,
-                                      image: testeModel.childrens == null
-                                          ? const AssetImage(
-                                              "assets/images/location.png",
-                                            )
-                                          : const AssetImage(
-                                              "assets/images/component.png",
-                                            )),
-                                  const SizedBox(
-                                    width: 10,
-                                  ),
-                                  Text(
-                                    testeModel.name!,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const Icon(
-                                    Icons.bolt,
-                                    color: Colors.green,
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        )
-                      : ListView.builder(
-                          shrinkWrap: true,
-                          itemCount: data.length,
-                          itemBuilder: (context, index) {
-                            TesteModel testeModel =
-                                TesteModel.fromJson(data[index]);
-                            ChildrenFil external =
-                                ChildrenFil.fromJson(data[index]);
-                            if (testeModel.childrens != null) {
-                              Childrens? subloc =
-                                  sublocations(testeModel.childrens!);
-                              if (subloc != null) {
-                                return ExpansionTile(
-                                    leading: const Image(
-                                      width: 24,
-                                      height: 24,
-                                      image: AssetImage(
-                                        "assets/images/location.png",
-                                      ),
-                                    ),
-                                    title: Text(
-                                      testeModel.name!,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    children: testeModel.childrens!.map((e) {
-                                      return (e.locationId != null &&
-                                              e.parentId == null &&
-                                              e.sensorId != null)
-                                          ? Padding(
-                                              padding: const EdgeInsets.only(
-                                                  left: 50.0, bottom: 10),
-                                              child: Row(
-                                                children: [
-                                                  const Image(
-                                                    width: 24,
-                                                    height: 24,
-                                                    image: AssetImage(
-                                                      "assets/images/component.png",
-                                                    ),
-                                                  ),
-                                                  Text(
-                                                    e.name!,
-                                                    style: const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                    ),
-                                                  ),
-                                                  (e.sensorId != null &&
-                                                          e.parentId == null &&
-                                                          e.locationId != null)
-                                                      ? Icon(
-                                                          e.status != "alert"
-                                                              ? Icons.bolt
-                                                              : Icons.circle,
-                                                          color: e.status ==
-                                                                  "alert"
-                                                              ? const Color(
-                                                                  0xFFED3833)
-                                                              : Colors.green,
-                                                          size: 20,
-                                                        )
-                                                      : const Icon(null),
-                                                ],
-                                              ),
-                                            )
-                                          : ExpansionTile(
-                                              leading: const Image(
-                                                width: 24,
-                                                height: 24,
-                                                image: AssetImage(
-                                                  "assets/images/location.png",
-                                                ),
-                                              ),
-                                              trailing: null,
-                                              title: Row(
-                                                children: [
-                                                  Text(
-                                                    e.name!,
-                                                    style: const TextStyle(
-                                                      fontSize: 15,
-                                                      fontWeight:
-                                                          FontWeight.w400,
-                                                    ),
-                                                  ),
-                                                  (e.sensorId != null &&
-                                                          e.parentId == null &&
-                                                          e.locationId != null)
-                                                      ? Icon(
-                                                          e.status != "alert"
-                                                              ? Icons.bolt
-                                                              : Icons.circle,
-                                                          color: e.status ==
-                                                                  "alert"
-                                                              ? const Color(
-                                                                  0xFFED3833)
-                                                              : Colors.green,
-                                                          size: 20,
-                                                        )
-                                                      : const Icon(null),
-                                                ],
-                                              ),
-                                              children: e.childrens != null
-                                                  ? e.childrens!.map((c) {
-                                                      return Padding(
-                                                        padding:
-                                                            const EdgeInsets
-                                                                .only(left: 40),
-                                                        child: Row(
-                                                          children: [
-                                                            const Image(
-                                                              width: 24,
-                                                              height: 24,
-                                                              image: AssetImage(
-                                                                "assets/images/component.png",
-                                                              ),
-                                                            ),
-                                                            const SizedBox(
-                                                              width: 10,
-                                                            ),
-                                                            Row(
-                                                              children: [
-                                                                Text(
-                                                                  c.name!,
-                                                                  style:
-                                                                      const TextStyle(
-                                                                    fontSize:
-                                                                        14,
-                                                                    fontWeight:
-                                                                        FontWeight
-                                                                            .w400,
-                                                                  ),
-                                                                ),
-                                                                const SizedBox(
-                                                                  width: 10,
-                                                                ),
-                                                                c.sensorId !=
-                                                                        null
-                                                                    ? Icon(
-                                                                        c.status ==
-                                                                                "alert"
-                                                                            ? Icons.circle
-                                                                            : Icons.bolt,
-                                                                        color: c.status ==
-                                                                                "alert"
-                                                                            ? const Color(0xFFED3833)
-                                                                            : Colors.green,
-                                                                        size:
-                                                                            20,
-                                                                      )
-                                                                    : const Icon(
-                                                                        null),
-                                                              ],
-                                                            ),
-                                                          ],
-                                                        ),
-                                                      );
-
-                                                      // return Container();
-                                                    }).toList()
-                                                  : [],
-                                            );
-                                    }).toList());
-                              }
-                            }
-                            if (external.status != null) {
-                              return Container(
-                                padding: const EdgeInsets.only(left: 20),
-                                child: Row(
-                                  children: [
-                                    const Image(
-                                      width: 24,
-                                      height: 24,
-                                      image: AssetImage(
-                                        "assets/images/component.png",
-                                      ),
-                                    ),
-                                    const SizedBox(
-                                      width: 10,
-                                    ),
-                                    Text(
-                                      external.name!,
-                                      style: const TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w500,
-                                      ),
-                                    ),
-                                    const Icon(
-                                      Icons.bolt,
-                                      color: Colors.green,
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                            // print(childrenFil!.id);
-                            return ExpansionTile(
-                              leading: const Image(
-                                width: 24,
-                                height: 24,
-                                image: AssetImage(
-                                  "assets/images/location.png",
-                                ),
-                              ),
-                              title: Text(external.name!),
-
-                              // enabled: false,
-                              dense: true,
-                            );
-                          },
-                        );
+                            }).toList(),
+                          );
+                        }
+                        return Container();
+                      });
                 },
               ),
-              // FutureBuilder(
-              //   future: _treeService.listLocationAndActive(widget.companieId),
-              //   builder: (context, snapshot) {
-              //     if (snapshot.hasData) {
-              //       return ListView.builder(
-              //         shrinkWrap: true,
-              //         itemCount: snapshot.data!.length,
-              //         itemBuilder: (context, index) {
-              //           var assets = snapshot.data.values.toList();
-              //           // print(assets);
-              //           TesteModel testeModel =
-              //               TesteModel.fromJson(assets[index]);
-              //           ChildrenFil external =
-              //               ChildrenFil.fromJson(assets[index]);
-              // if (testeModel.childrens != null) {
-              //   Childrens? subloc =
-              //       sublocations(testeModel.childrens!);
-
-              // if (subloc != null) {
-              //   return ExpansionTile(
-              //       leading: const Image(
-              //         width: 24,
-              //         height: 24,
-              //         image: AssetImage(
-              //           "assets/images/location.png",
-              //         ),
-              //       ),
-              //       title: Text(
-              //         testeModel.name!,
-              //         style: const TextStyle(
-              //           fontSize: 16,
-              //           fontWeight: FontWeight.w500,
-              //         ),
-              //       ),
-              // children: testeModel.childrens!.map((e) {
-              //   return Padding(
-              //     padding: const EdgeInsets.only(left: 20.0),
-              //     child: ExpansionTile(
-              //       leading: Image(
-              //         width: 24,
-              //         height: 24,
-              //         image: (e.locationId != null &&
-              //                 e.parentId == null &&
-              //                 e.sensorId == null)
-              //             ? const AssetImage(
-              //                 "assets/images/active.png",
-              //               )
-              //             : const AssetImage(
-              //                 "assets/images/location.png",
-              //               ),
-              //       ),
-              //       trailing: null,
-              //       title: Row(
-              //         children: [
-              //           Text(
-              //             e.name!,
-              //             style: const TextStyle(
-              //               fontSize: 15,
-              //               fontWeight: FontWeight.w400,
-              //             ),
-              //           ),
-              //           (e.sensorId != null &&
-              //                   e.parentId == null &&
-              //                   e.locationId != null)
-              //               ? Icon(
-              //                   e.status != "alert"
-              //                       ? Icons.bolt
-              //                       : Icons.circle,
-              //                   color: e.status == "alert"
-              //                       ? const Color(0xFFED3833)
-              //                       : Colors.green,
-              //                   size: 20,
-              //                 )
-              //               : const Icon(null),
-              //         ],
-              //       ),
-              //       children: e.childrens != null
-              //           ? e.childrens!.map((c) {
-              //               return Padding(
-              //                 padding: const EdgeInsets.only(
-              //                     left: 40),
-              //                 child: Row(
-              //                   children: [
-              //                     const Image(
-              //                       width: 24,
-              //                       height: 24,
-              //                       image: AssetImage(
-              //                         "assets/images/component.png",
-              //                       ),
-              //                     ),
-              //                     const SizedBox(
-              //                       width: 10,
-              //                     ),
-              //                     Row(
-              //                       children: [
-              //                         Text(
-              //                           c.name!,
-              //                           style:
-              //                               const TextStyle(
-              //                             fontSize: 14,
-              //                             fontWeight:
-              //                                 FontWeight.w400,
-              //                           ),
-              //                         ),
-              //                         const SizedBox(
-              //                           width: 10,
-              //                         ),
-              //                         c.sensorId != null
-              //                             ? Icon(
-              //                                 c.status ==
-              //                                         "alert"
-              //                                     ? Icons
-              //                                         .circle
-              //                                     : Icons
-              //                                         .bolt,
-              //                                 color: c.status ==
-              //                                         "alert"
-              //                                     ? const Color(
-              //                                         0xFFED3833)
-              //                                     : Colors
-              //                                         .green,
-              //                                 size: 20,
-              //                               )
-              //                             : const Icon(null),
-              //                       ],
-              //                     ),
-              //                   ],
-              //                 ),
-              //               );
-
-              //               // return Container();
-              //             }).toList()
-              //           : [],
-              //     ),
-              //   );
-              // }).toList());
-              //             }
-              //           }
-              //           if (external.status != null) {
-              // return Container(
-              //   padding: const EdgeInsets.only(left: 20),
-              //   child: Row(
-              //     children: [
-              //       const Image(
-              //         width: 24,
-              //         height: 24,
-              //         image: AssetImage(
-              //           "assets/images/component.png",
-              //         ),
-              //       ),
-              //       const SizedBox(
-              //         width: 10,
-              //       ),
-              //       Text(
-              //         external.name!,
-              //         style: const TextStyle(
-              //           fontSize: 16,
-              //           fontWeight: FontWeight.w500,
-              //         ),
-              //       ),
-              //       const Icon(
-              //         Icons.bolt,
-              //         color: Colors.green,
-              //       ),
-              //     ],
-              //   ),
-              // );
-              //           }
-              //           // print(childrenFil!.id);
-              //           return ExpansionTile(
-              //             leading: const Image(
-              //               width: 24,
-              //               height: 24,
-              //               image: AssetImage(
-              //                 "assets/images/location.png",
-              //               ),
-              //             ),
-              //             title: Text(external.name!),
-
-              //             // enabled: false,
-              //             dense: true,
-              //           );
-              //         },
-              //       );
-              //     }
-              //     return const Center(child: CircularProgressIndicator());
-              //   },
-              // ),
             ),
           ],
         ),
@@ -766,35 +231,83 @@ class _AssetPageState extends State<AssetPage> {
     );
   }
 
-  setColorclickEnergy() {
-    if (clickEnergy) {
-      setState(() {
-        clickEnergy = false;
-        Provider.of<TreeService>(context, listen: false).listLocationAndActive(widget.companieId);
-      });
-    } else {
+  // Widget listEnergy(List sensors){
+  //   return ExpansionTile(title: );
+  // }
+
+  Widget listData(String name, List childrens) {
+    return ExpansionTile(
+      leading: const Image(
+        image: AssetImage("assets/images/location.png"),
+        height: 20,
+      ),
+      title: Text(name),
+      children: childrens.map(
+        (en) {
+          return ExpansionTile(
+            leading: en.locationId != null || en.parentId != null
+                ? const Image(
+                    image: AssetImage("assets/images/location.png"),
+                    height: 20,
+                  )
+                : const Image(
+                    image: AssetImage("assets/images/active.png"),
+                    height: 20,
+                  ),
+            title: Text(en.name!),
+            children: en.childrens != null
+                ? en.childrens!.map(
+                    (act) {
+                      return ActiveComponent(
+                        name: act.name!,
+                        status: act.status!,
+                      );
+                    },
+                  ).toList()
+                : [],
+          );
+        },
+      ).toList(),
+    );
+  }
+
+  clickSensorEnergy() {
+    if (!clickEnergy) {
+      if (clickCritico) {
+        setState(() {
+          clickCritico = false;
+        });
+      }
       setState(() {
         clickEnergy = true;
-
-        clickCritico = false;
-
-        Provider.of<TreeService>(context, listen: false).filterSensorEnergy();
       });
+      Provider.of<TreeService>(context, listen: false).filterSensorEnergy();
+    } else {
+      setState(() {
+        clickEnergy = false;
+      });
+      Provider.of<TreeService>(context, listen: false)
+          .listLocationAndActive(widget.companieId);
     }
   }
 
-  setColorClickCritico() {
-    if (clickCritico) {
+  clickSensorAlert() {
+    if (!clickCritico) {
+      if (clickEnergy) {
+        setState(() {
+          clickEnergy = false;
+        });
+      }
       setState(() {
-        clickCritico = false;
-        Provider.of<TreeService>(context, listen: false).listLocationAndActive(widget.companieId);
+        clickCritico = true;
       });
+      Provider.of<TreeService>(context, listen: false).filterSensorAlert();
     } else {
       setState(() {
-        clickEnergy = false;
-        clickCritico = true;
-        Provider.of<TreeService>(context, listen: false).filterSensorAlert();
+        clickCritico = false;
       });
+      Provider.of<TreeService>(context, listen: false)
+          .listLocationAndActive(widget.companieId);
     }
   }
 
@@ -812,9 +325,9 @@ class _AssetPageState extends State<AssetPage> {
     return Childrens();
   }
 
-  childFil(List<ChildrenFil> childrenFil) {
-    for (int i = 0; i < childrenFil.length;) {
-      return childrenFil[i];
+  external(List data) {
+    for (int i = 0; i < data.length;) {
+      return data[i];
     }
     // return childrenFil.name;
   }
